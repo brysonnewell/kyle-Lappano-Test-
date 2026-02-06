@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renesas Evaluation Microsite</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .section-title {
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: #0f172a;
+        }
+        /* Custom scrollbar for cleanliness */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Inline Icons to avoid UMD/Library errors ---
+        const IconBase = ({ children, size = 24, className = "" }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const Shield = (props) => <IconBase {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></IconBase>;
+        const BarChart3 = (props) => <IconBase {...props}><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></IconBase>;
+        const FileText = (props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></IconBase>;
+        const Globe = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconBase>;
+        const Layers = (props) => <IconBase {...props}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></IconBase>;
+        const CheckCircle = (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>;
+        const ChevronRight = (props) => <IconBase {...props}><polyline points="9 18 15 12 9 6"/></IconBase>;
+        const Activity = (props) => <IconBase {...props}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></IconBase>;
+        const LayoutDashboard = (props) => <IconBase {...props}><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></IconBase>;
+        const Compass = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></IconBase>;
+        const PlayCircle = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></IconBase>;
+        const ExternalLink = (props) => <IconBase {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></IconBase>;
+
+
+        // --- Components ---
+
+        const Header = () => (
+            <header className="bg-slate-900 text-white pt-12 pb-24 px-6 md:px-12">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-slate-400 text-sm font-medium tracking-wider uppercase mb-2">Evaluation Microsite</div>
+                    <h1 className="text-3xl md:text-4xl font-semibold mb-4">Renesas Electronics: <br/>DocuSign Platform Assessment</h1>
+                    <p className="text-slate-300 max-w-2xl text-lg font-light leading-relaxed">
+                        A centralized workspace for Legal Operations leadership to evaluate governance, identity verification, and enterprise scalability.
+                    </p>
+                </div>
+            </header>
+        );
+
+        const Section = ({ id, title, children, className = "" }) => (
+            <section id={id} className={`py-12 px-6 md:px-12 border-b border-slate-200 last:border-0 ${className}`}>
+                <div className="max-w-6xl mx-auto">
+                    <h2 className="text-2xl font-semibold text-slate-800 section-title mb-8">{title}</h2>
+                    {children}
+                </div>
+            </section>
+        );
+
+        const Card = ({ title, children, icon: Icon }) => (
+            <div className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm h-full flex flex-col">
+                <div className="flex items-center mb-4">
+                    {Icon && <div className="p-2 bg-slate-100 rounded-md mr-3 text-slate-700"><Icon size={20} /></div>}
+                    <h3 className="text-lg font-medium text-slate-800">{title}</h3>
+                </div>
+                <div className="text-slate-600 text-sm leading-relaxed flex-grow">
+                    {children}
+                </div>
+            </div>
+        );
+
+        const TimelineGraphic = () => (
+            <div className="relative mt-8 mb-4">
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -translate-y-1/2 hidden md:block"></div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+                    {[
+                        { label: "Today", desc: "Envelope-based global eSignature usage", color: "bg-slate-800" },
+                        { label: "Near Term", desc: "Identity & analytics evaluation", color: "bg-blue-700" },
+                        { label: "Q3 Planning", desc: "Budgeting & decision window", color: "bg-slate-500" },
+                        { label: "Future", desc: "Enterprise alignment (Renesas + Altium)", color: "bg-slate-400" },
+                    ].map((item, idx) => (
+                        <div key={idx} className="relative bg-white p-4 rounded border border-slate-200 md:border-transparent md:bg-transparent z-10">
+                            <div className={`w-3 h-3 rounded-full mb-2 hidden md:block ${item.color} mx-auto md:mx-0`}></div>
+                            <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">{item.label}</div>
+                            <div className="text-sm font-medium text-slate-800">{item.desc}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const ExecutiveOverview = () => (
+            <Section id="overview" title="Executive Overview">
+                <div className="grid md:grid-cols-3 gap-8 mb-8">
+                    <div className="col-span-2">
+                        <p className="text-slate-600 mb-4 leading-relaxed">
+                            Renesas has established a robust foundation for global eSignature. The current evaluation shifts focus from basic envelope management to <strong>identity assurance, deep analytics, and enterprise-level governance</strong>.
+                        </p>
+                        <p className="text-slate-600 leading-relaxed">
+                            This microsite serves as the primary alignment tool for Legal Operations, IT, and regional stakeholders through the Q2–Q3 planning cycle.
+                        </p>
+                    </div>
+                    <div className="bg-slate-50 p-6 rounded border border-slate-200">
+                        <h4 className="font-semibold text-slate-800 mb-2 text-sm uppercase">Key Objectives</h4>
+                        <ul className="space-y-2 text-sm text-slate-600">
+                            <li className="flex items-start"><CheckCircle size={16} className="mr-2 mt-0.5 text-blue-600" /> Validate Identity Verification options</li>
+                            <li className="flex items-start"><CheckCircle size={16} className="mr-2 mt-0.5 text-blue-600" /> Assess Analytics for legal ops visibility</li>
+                            <li className="flex items-start"><CheckCircle size={16} className="mr-2 mt-0.5 text-blue-600" /> Define Future State governance model</li>
+                        </ul>
+                    </div>
+                </div>
+                <TimelineGraphic />
+            </Section>
+        );
+
+        const CurrentState = () => (
+            <Section id="current-state" title="Current State Analysis" className="bg-white">
+                <div className="grid md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 className="text-lg font-medium text-slate-800 mb-4 flex items-center">
+                            <Layers size={20} className="mr-2" /> Existing Environment
+                        </h3>
+                        <ul className="space-y-3 text-slate-600 text-sm">
+                            <li className="pl-4 border-l-2 border-slate-300">
+                                <strong>Centralized Ownership:</strong> Legal Operations manages access; usage restricted to attorneys and select functions.
+                            </li>
+                            <li className="pl-4 border-l-2 border-slate-300">
+                                <strong>Separate Instances:</strong> Distinct DocuSign agreements and environments for Renesas and Altium.
+                            </li>
+                            <li className="pl-4 border-l-2 border-slate-300">
+                                <strong>Global Footprint:</strong> Active usage across US, Japan, Europe, and APAC regions.
+                            </li>
+                            <li className="pl-4 border-l-2 border-slate-300">
+                                <strong>High-Velocity Templates:</strong> Established workflow for NDAs and standard agreements.
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-medium text-slate-800 mb-4 flex items-center">
+                            <Activity size={20} className="mr-2" /> Operational Constraints
+                        </h3>
+                        <div className="bg-amber-50 border border-amber-100 p-5 rounded-lg">
+                            <ul className="space-y-3 text-slate-700 text-sm">
+                                <li className="flex items-start">
+                                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                    <span><strong>Forecasting Complexity:</strong> Envelope-based model creates unpredictability in budgeting.</span>
+                                </li>
+                                <li className="flex items-start">
+                                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                    <span><strong>Disparate Usage:</strong> Inconsistent adoption patterns following recent acquisitions.</span>
+                                </li>
+                                <li className="flex items-start">
+                                    <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                    <span><strong>Scalability Limits:</strong> Manual review processes hindering high-volume scalability.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+        );
+
+        const StrategicDrivers = () => (
+            <Section id="drivers" title="Strategic Drivers">
+                <div className="grid md:grid-cols-3 gap-6">
+                    <Card title="ERP Consolidation" icon={LayoutDashboard}>
+                        The ongoing global ERP consolidation (through mid-next year) necessitates a unified approach to contract data and system integration.
+                    </Card>
+                    <Card title="Global Expansion" icon={Globe}>
+                        Expansion of legal teams in India and APAC, coupled with increased M&A activity, requires scalable, standardized workflows.
+                    </Card>
+                    <Card title="Risk & Regulation" icon={Shield}>
+                        Heightened data privacy scrutiny in Europe/Asia and a desire to reduce manual review on low-risk agreements (NDAs).
+                    </Card>
+                </div>
+            </Section>
+        );
+
+        const IdentityFramework = () => (
+            <Section id="identity" title="Identity Verification & Trust Framework" className="bg-slate-50">
+                <div className="mb-8 max-w-4xl">
+                    <p className="text-slate-600 mb-4">
+                        A critical distinction exists between <strong>User Identity</strong> (employees access via SSO/SCIM) and <strong>Signer Identity</strong> (verifying external counterparties). The evaluation focuses on the latter to mitigate risk in high-value or cross-border agreements.
+                    </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-8 mb-8">
+                    <div className="bg-white p-6 rounded-lg border border-slate-200">
+                        <h4 className="font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Verification Methods Under Review</h4>
+                        <ul className="space-y-3 text-sm text-slate-600">
+                            <li className="flex justify-between">
+                                <span>Access Code / SMS</span>
+                                <span className="text-slate-400 text-xs bg-slate-100 px-2 py-0.5 rounded">Basic</span>
+                            </li>
+                            <li className="flex justify-between">
+                                <span>Knowledge-Based (KBA)</span>
+                                <span className="text-blue-600 text-xs bg-blue-50 px-2 py-0.5 rounded">Intermediate</span>
+                            </li>
+                            <li className="flex justify-between">
+                                <span>Gov't ID / Biometric</span>
+                                <span className="text-blue-600 text-xs bg-blue-50 px-2 py-0.5 rounded">Advanced</span>
+                            </li>
+                            <li className="flex justify-between">
+                                <span>Qualified (QES)</span>
+                                <span className="text-slate-800 text-xs bg-slate-200 px-2 py-0.5 rounded">Regulated</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-lg border border-slate-200">
+                        <h4 className="font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Regional Considerations</h4>
+                        <div className="space-y-4">
+                            <div>
+                                <div className="text-xs font-bold text-slate-500 uppercase mb-1">EU / UK</div>
+                                <p className="text-sm text-slate-600">Compliance with eIDAS standards; evaluation of Qualified Electronic Signatures (QES) for specific HR and Real Estate use cases.</p>
+                            </div>
+                            <div>
+                                <div className="text-xs font-bold text-slate-500 uppercase mb-1">China</div>
+                                <p className="text-sm text-slate-600">Integration with government-recognized verification providers is essential for enforceability.</p>
+                            </div>
+                             <div>
+                                <div className="text-xs font-bold text-slate-500 uppercase mb-1">India</div>
+                                <p className="text-sm text-slate-600">Monitoring rapidly evolving legal requirements regarding digital signature certificates.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+        );
+
+        const AnalyticsNDA = () => (
+            <Section id="analytics-nda" title="Analytics & NDA Optimization">
+                <div className="grid md:grid-cols-2 gap-12">
+                    <div>
+                        <div className="flex items-center mb-6">
+                            <div className="p-2 bg-indigo-50 text-indigo-700 rounded mr-3"><BarChart3 size={24} /></div>
+                            <h3 className="text-xl font-medium text-slate-800">Analytics & Insight</h3>
+                        </div>
+                        <p className="text-sm text-slate-600 mb-4">
+                            Moving beyond simple counts to actionable operational intelligence.
+                        </p>
+                        <ul className="space-y-3">
+                            {[
+                                "Where are contracts stalling?",
+                                "Which workflows consume the most legal effort?",
+                                "Volume usage by region and function",
+                                "Integration with BI platforms"
+                            ].map((item, i) => (
+                                <li key={i} className="flex items-start text-sm text-slate-700">
+                                    <ChevronRight size={16} className="mr-2 mt-0.5 text-slate-400" />
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <div className="flex items-center mb-6">
+                            <div className="p-2 bg-emerald-50 text-emerald-700 rounded mr-3"><FileText size={24} /></div>
+                            <h3 className="text-xl font-medium text-slate-800">NDA Acceleration</h3>
+                        </div>
+                        <p className="text-sm text-slate-600 mb-4">
+                            Reducing legal touchpoints for low-risk agreements.
+                        </p>
+                        
+                        <div className="bg-slate-50 p-4 rounded border border-slate-100 mt-4">
+                             <div className="flex items-center justify-between text-xs text-slate-500 mb-2 uppercase tracking-wide">
+                                <span>Future State Concept</span>
+                            </div>
+                            <div className="flex flex-col space-y-4 relative">
+                                <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-slate-200"></div>
+                                <div className="flex items-center z-10">
+                                    <div className="w-6 h-6 rounded-full bg-white border border-slate-300 flex items-center justify-center text-xs font-bold mr-3">1</div>
+                                    <span className="text-sm font-medium text-slate-700">Pre-approved Templates</span>
+                                </div>
+                                <div className="flex items-center z-10">
+                                    <div className="w-6 h-6 rounded-full bg-white border border-slate-300 flex items-center justify-center text-xs font-bold mr-3">2</div>
+                                    <span className="text-sm font-medium text-slate-700">Rules-Based Routing</span>
+                                </div>
+                                <div className="flex items-center z-10">
+                                    <div className="w-6 h-6 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-700 flex items-center justify-center text-xs font-bold mr-3">3</div>
+                                    <span className="text-sm font-medium text-slate-700">Auto-Approval (Low Risk)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+        );
+
+        const SolutionSpotlight = () => (
+            <Section id="solutions" title="Solution Spotlight: Navigator" className="bg-slate-50">
+               <div className="grid md:grid-cols-2 gap-12 items-center">
+                   <div>
+                       <div className="flex items-center mb-6">
+                            <div className="p-2 bg-blue-100 text-blue-700 rounded mr-3"><Compass size={24} /></div>
+                            <h3 className="text-xl font-medium text-slate-800">Intelligent Contract Repository</h3>
+                        </div>
+                       <p className="text-slate-600 mb-6 leading-relaxed">
+                           To address the need for centralized visibility and deep analytics, we are evaluating <strong>DocuSign Navigator</strong>. This repository uses AI to centralize agreements, extract key data points, and provide immediate insight into the global contract portfolio.
+                       </p>
+                       <ul className="space-y-3 mb-6">
+                           <li className="flex items-start text-sm text-slate-700">
+                               <CheckCircle size={16} className="mr-2 mt-0.5 text-blue-600" />
+                               <span>Centralize agreements from Renesas & Altium</span>
+                           </li>
+                            <li className="flex items-start text-sm text-slate-700">
+                               <CheckCircle size={16} className="mr-2 mt-0.5 text-blue-600" />
+                               <span>AI-driven search & data extraction</span>
+                           </li>
+                           <li className="flex items-start text-sm text-slate-700">
+                               <CheckCircle size={16} className="mr-2 mt-0.5 text-blue-600" />
+                               <span>Proactive renewal & expiry alerts</span>
+                           </li>
+                       </ul>
+                   </div>
+                   
+                   <div className="bg-slate-900 rounded-xl overflow-hidden shadow-lg relative group border border-slate-700">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 pointer-events-none"></div>
+                        <div className="p-10 text-center flex flex-col items-center justify-center h-full min-h-[280px]">
+                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-6 backdrop-blur-sm group-hover:scale-105 transition-transform duration-300">
+                                <PlayCircle size={32} className="text-white" />
+                            </div>
+                            <h4 className="text-white font-semibold text-lg mb-2">Interactive Demo: Navigator</h4>
+                            <p className="text-slate-300 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
+                                Experience the AI-driven search, dashboarding, and repository centralization in a guided environment.
+                            </p>
+                            <a 
+                                href="https://content.docusign.com/i/2eJHfzeJbeFjTWim1LFTv7IP54t9a______vJe9ksVre86RJPLUSSIGNa2QFAISlQmUBF4aVp7Ql8PLUSSIGNbHvmEIrK___gRXVRFxNZYgXWa5URiQ9___FduydIsS88fiYVAbAd8qNleaapGbQVd"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors shadow-lg hover:shadow-blue-500/25"
+                            >
+                                Launch Solution Demo
+                                <ExternalLink size={16} className="ml-2" />
+                            </a>
+                        </div>
+                   </div>
+               </div>
+            </Section>
+        );
+
+        const EnterpriseConsiderations = () => (
+            <Section id="enterprise" title="Enterprise Considerations">
+                <div className="bg-white border-l-4 border-slate-700 p-6 shadow-sm rounded-r-lg">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">Consolidated Governance</h3>
+                    <p className="text-slate-600 text-sm mb-4">
+                        Evaluation of a unified model across Renesas and Altium to streamline administration.
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="bg-slate-50 p-3 rounded">
+                            <span className="block text-xs font-bold text-slate-500 uppercase mb-1">Benefit</span>
+                            <span className="text-sm text-slate-800">Reduced dependency on granular envelope forecasting.</span>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded">
+                            <span className="block text-xs font-bold text-slate-500 uppercase mb-1">Flexibility</span>
+                            <span className="text-sm text-slate-800">Central oversight with controlled delegation for regional autonomy.</span>
+                        </div>
+                    </div>
+                </div>
+            </Section>
+        );
+
+        const EvaluationPlan = () => (
+            <Section id="next-steps" title="Evaluation Plan & Next Steps">
+                <div className="max-w-3xl">
+                    <div className="space-y-6">
+                        <div className="flex">
+                            <div className="flex-shrink-0 w-24 pt-1">
+                                <span className="text-sm font-bold text-slate-900">March</span>
+                            </div>
+                            <div className="pb-6 border-b border-slate-100 w-full">
+                                <h4 className="text-base font-semibold text-slate-800">Working Session (San Jose)</h4>
+                                <p className="text-sm text-slate-600 mt-1">Platform walkthrough, capability review, and requirement gathering.</p>
+                            </div>
+                        </div>
+                        <div className="flex">
+                            <div className="flex-shrink-0 w-24 pt-1">
+                                <span className="text-sm font-bold text-slate-900">Apr - May</span>
+                            </div>
+                            <div className="pb-6 border-b border-slate-100 w-full">
+                                <h4 className="text-base font-semibold text-slate-800">Proof of Concept & Feedback</h4>
+                                <p className="text-sm text-slate-600 mt-1">Optional POCs for Identity/Analytics. Feedback collection from US, Japan, Europe stakeholders.</p>
+                            </div>
+                        </div>
+                        <div className="flex">
+                            <div className="flex-shrink-0 w-24 pt-1">
+                                <span className="text-sm font-bold text-slate-900">Q3</span>
+                            </div>
+                            <div className="w-full">
+                                <h4 className="text-base font-semibold text-slate-800">Planning & Alignment</h4>
+                                <p className="text-sm text-slate-600 mt-1">Budgeting alignment and final strategic roadmap decision.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-8 p-4 bg-slate-100 rounded text-center text-slate-600 text-sm italic">
+                        "This evaluation is intended to inform planning decisions, not to mandate change."
+                    </div>
+                </div>
+            </Section>
+        );
+
+        const Footer = () => (
+            <footer className="bg-slate-900 text-slate-400 py-12 px-6 text-center text-xs">
+                <p>&copy; {new Date().getFullYear()} Renesas Electronics. Internal Evaluation Material.</p>
+                <p className="mt-2">Confidential - For Internal Use Only</p>
+            </footer>
+        );
+
+        const App = () => {
+            const [activeSection, setActiveSection] = useState('overview');
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    const sections = ['overview', 'current-state', 'drivers', 'identity', 'analytics-nda', 'solutions', 'enterprise', 'next-steps'];
+                    const scrollPosition = window.scrollY + 100;
+
+                    for (const section of sections) {
+                        const element = document.getElementById(section);
+                        if (element && element.offsetTop <= scrollPosition && (element.offsetTop + element.offsetHeight) > scrollPosition) {
+                            setActiveSection(section);
+                        }
+                    }
+                };
+
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const scrollTo = (id) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const navItems = [
+                { id: 'overview', label: 'Overview' },
+                { id: 'current-state', label: 'Current State' },
+                { id: 'drivers', label: 'Drivers' },
+                { id: 'identity', label: 'Identity' },
+                { id: 'analytics-nda', label: 'Analytics' },
+                { id: 'solutions', label: 'Solutions' },
+                { id: 'enterprise', label: 'Enterprise' },
+                { id: 'next-steps', label: 'Plan' },
+            ];
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 px-6 hidden md:block">
+                        <div className="max-w-6xl mx-auto flex space-x-8 overflow-x-auto">
+                            {navItems.map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => scrollTo(item.id)}
+                                    className={`py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                                        activeSection === item.id 
+                                        ? 'border-blue-600 text-blue-600' 
+                                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                                    }`}
+                                >
+                                    {item.label}
+                                </button>
+                            ))}
+                        </div>
+                    </nav>
+
+                    <main className="flex-grow -mt-px">
+                        <Header />
+                        <div className="-mt-12 bg-white rounded-t-3xl md:rounded-none relative z-10 shadow-lg md:shadow-none">
+                            <ExecutiveOverview />
+                            <CurrentState />
+                            <StrategicDrivers />
+                            <IdentityFramework />
+                            <AnalyticsNDA />
+                            <SolutionSpotlight />
+                            <EnterpriseConsiderations />
+                            <EvaluationPlan />
+                        </div>
+                    </main>
+
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
